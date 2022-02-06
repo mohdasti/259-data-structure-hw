@@ -2,6 +2,7 @@
 #For full credit, provide answers for at least 8/11 questions
 
 #List names of students collaborating with: 
+### only myself; MOHAMMAD DASTGHEIB ###
 
 ### SETUP: RUN THIS BEFORE STARTING ----------
 
@@ -33,7 +34,10 @@ rs_old <- url_old %>% read_html() %>% html_nodes(xpath='/html/body/table[2]') %>
 
 #ANSWER
 
-
+rs_joined_orig <- full_join(rs_new, rs_old, by=c("Artist", "Song"))
+nrow(rs_joined_orig) # there are 860 observations 
+#some songs appeared two times as if they have not successfully merged
+#maybe because in one of the datasets, their ranking is NA so by default they were treated as two separate songs
 
 ### Question 2 ---------- 
 
