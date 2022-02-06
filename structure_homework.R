@@ -68,6 +68,21 @@ rs_all <-  full_join(rs_new, rs_old, by=c("Artist", "Song", "Source"))
 # Use both functions to make all artists/song lowercase and remove any extra spaces
 
 #ANSWER
+#removing The
+rs_all$Song <- str_remove_all(rs_all$Song,"The")
+rs_all$Artist <- str_remove_all(rs_all$Artist, "The")
+#replacing & with and
+rs_all$Song <- str_replace_all(rs_all$Song, "&", "and")
+rs_all$Artist <- str_replace_all(rs_all$Artist, "&", "and")
+#removing all punctuations
+rs_all$Song <- str_remove_all(rs_all$Song, "[:punct:]")
+rs_all$Artist <- str_remove_all(rs_all$Artist, "[:punct:]")
+#make all lowercase
+rs_all$Song <- str_to_lower(rs_all$Song, locale = "en")
+rs_all$Artist <- str_to_lower(rs_all$Artist, locale = "en")
+#remove extra space
+rs_all$Song <- str_trim(rs_all$Song)
+rs_all$Artist <- str_trim(rs_all$Artist)
 
 
 ### Question 4 ----------
