@@ -96,7 +96,12 @@ rs_all$Artist <- str_trim(rs_all$Artist)
 # in the new rs_joined compared to the original. Use nrow to check (there should be 799 rows)
 
 #ANSWER
-
+#splitting the rs_all into two separate tibbles
+rs_split_new <- rs_all %>% filter(Source=='New') 
+rs_split_old <- rs_all %>% filter(Source=='Old') 
+#joining them
+rs_joined <- full_join(rs_split_old,rs_split_new, by=c("Artist", "Song"))
+nrow(rs_joined) # it is 799
 
 ### Question 5 ----------
 
