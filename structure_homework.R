@@ -48,7 +48,15 @@ nrow(rs_joined_orig) # there are 860 observations
 # Make Rank and Year into integer variables for rs_old before binding them into rs_all
 
 #ANSWER
-
+rs_new$Source <- "New"
+rs_old$Source <- "Old"
+bind_rows(rs_new,rs_old)
+rs_new$Year <- as.numeric(as.character(rs_new$Year)) 
+rs_old$Year <- as.numeric(as.character(rs_old$Year)) 
+rs_new$Rank <- as.numeric(as.character(rs_new$Rank)) 
+rs_old$Rank <- as.numeric(as.character(rs_new$Rank)) 
+rs_all <- bind_rows(rs_old,rs_new)
+rs_all <-  full_join(rs_new, rs_old, by=c("Artist", "Song", "Source"))
 
 ### Question 3 ----------
 
