@@ -1,7 +1,7 @@
 #PSYC 259 Homework 3 - Data Structure
 #For full credit, provide answers for at least 8/11 questions
 
-#List names of students collaborating with: 
+#List names of students collaborating with:
 ### only myself; MOHAMMAD DASTGHEIB ###
 
 ### SETUP: RUN THIS BEFORE STARTING ----------
@@ -14,15 +14,23 @@ library(lubridate)
 library(rvest)
 
 # Scrape the data for the new rolling stone top 500 list
-url <- "https://stuarte.co/2021/2021-full-list-rolling-stones-top-500-songs-of-all-time-updated/"
-rs_new <- url %>% read_html() %>% html_nodes(xpath='//*[@id="post-14376"]/div[2]/div[2]/table') %>% html_table() %>% pluck(1)
+url <-
+  "https://stuarte.co/2021/2021-full-list-rolling-stones-top-500-songs-of-all-time-updated/"
+rs_new <-
+  url %>% read_html() %>% html_nodes(xpath = '//*[@id="post-14376"]/div[2]/div[2]/table') %>% html_table() %>% pluck(1)
 
 # Scrape the data for the old rolling stone top 500 list
 url_old <- "https://www.cs.ubc.ca/~davet/music/list/Best9.html"
-rs_old <- url_old %>% read_html() %>% html_nodes(xpath='/html/body/table[2]') %>% html_table() %>% pluck(1) %>% 
-  select(1, 4, 3, 7) %>% rename(Rank = X1, Artist = X3, Song = X4, Year = X7) %>% filter(Year != "YEAR") 
+rs_old <-
+  url_old %>% read_html() %>% html_nodes(xpath = '/html/body/table[2]') %>% html_table() %>% pluck(1) %>%
+  select(1, 4, 3, 7) %>% rename(
+    Rank = X1,
+    Artist = X3,
+    Song = X4,
+    Year = X7
+  ) %>% filter(Year != "YEAR")
 
-### Question 1 ---------- 
+### Question 1 ----------
 
 # Use "full_join" to merge the old and new datasets, rs_new and rs_old,
 # by Artist AND Song. Save the results to a dataset called rs_joined_orig
@@ -34,12 +42,13 @@ rs_old <- url_old %>% read_html() %>% html_nodes(xpath='/html/body/table[2]') %>
 
 #ANSWER
 
-rs_joined_orig <- full_join(rs_new, rs_old, by=c("Artist", "Song"))
-nrow(rs_joined_orig) # there are 860 observations 
+rs_joined_orig <-
+  full_join(rs_new, rs_old, by = c("Artist", "Song"))
+nrow(rs_joined_orig) # there are 860 observations
 #some songs appeared two times as if they have not successfully merged
 #maybe because in one of the datasets, their ranking is NA so by default they were treated as two separate songs
 
-### Question 2 ---------- 
+### Question 2 ----------
 
 # To clean up the datasets, it would be more efficient to put them into a single data set
 # Add a new variable to each dataset called "Source" with value "New" for rs_new and
@@ -50,13 +59,14 @@ nrow(rs_joined_orig) # there are 860 observations
 #ANSWER
 rs_new$Source <- "New"
 rs_old$Source <- "Old"
-bind_rows(rs_new,rs_old)
-rs_new$Year <- as.numeric(as.character(rs_new$Year)) 
-rs_old$Year <- as.numeric(as.character(rs_old$Year)) 
-rs_new$Rank <- as.numeric(as.character(rs_new$Rank)) 
-rs_old$Rank <- as.numeric(as.character(rs_new$Rank)) 
-rs_all <- bind_rows(rs_old,rs_new)
-rs_all <-  full_join(rs_new, rs_old, by=c("Artist", "Song", "Source"))
+bind_rows(rs_new, rs_old)
+rs_new$Year <- as.numeric(as.character(rs_new$Year))
+rs_old$Year <- as.numeric(as.character(rs_old$Year))
+rs_new$Rank <- as.numeric(as.character(rs_new$Rank))
+rs_old$Rank <- as.numeric(as.character(rs_new$Rank))
+rs_all <- bind_rows(rs_old, rs_new)
+rs_all <-
+  full_join(rs_new, rs_old, by = c("Artist", "Song", "Source"))
 
 ### Question 3 ----------
 
@@ -69,7 +79,7 @@ rs_all <-  full_join(rs_new, rs_old, by=c("Artist", "Song", "Source"))
 
 #ANSWER
 #removing The
-rs_all$Song <- str_remove_all(rs_all$Song,"The")
+rs_all$Song <- str_remove_all(rs_all$Song, "The")
 rs_all$Artist <- str_remove_all(rs_all$Artist, "The")
 #replacing & with and
 rs_all$Song <- str_replace_all(rs_all$Song, "&", "and")
@@ -97,24 +107,34 @@ rs_all$Artist <- str_trim(rs_all$Artist)
 
 #ANSWER
 #splitting the rs_all into two separate tibbles
-rs_split_new <- rs_all %>% filter(Source=='New') 
-rs_split_old <- rs_all %>% filter(Source=='Old') 
+rs_split_new <- rs_all %>% filter(Source == 'New')
+rs_split_old <- rs_all %>% filter(Source == 'Old')
 #joining them
-rs_joined <- full_join(rs_split_old,rs_split_new, by=c("Artist", "Song"))
+rs_joined <-
+  full_join(
+    rs_split_old,
+    rs_split_new,
+    by = c("Artist", "Song"),
+    suffix = c(".x", ".y")
+  ) %>% select(-ends_with(".y.y")) %>% select(-ends_with(".x.x"))
 nrow(rs_joined) # it is 799
 
 ### Question 5 ----------
 
 # Let's clean up rs_joined with the following steps:
-  # remove the variable "Source"
-  # remove any rows where Rank_New or Rank_Old is NA (so we have only the songs that appeared in both lists)
-  # calculate a new variable called "Rank_Change" that subtracts new rank from old rank
-  # sort by rank change
+# remove the variable "Source"
+# remove any rows where Rank_New or Rank_Old is NA (so we have only the songs that appeared in both lists)
+# calculate a new variable called "Rank_Change" that subtracts new rank from old rank
+# sort by rank change
 # Save those changes to rs_joined
 # You should now be able to see how each song moved up/down in rankings between the two lists
 
 #ANSWER
-
+rs_joined_Q5 <-
+  rs_joined %>% select(-starts_with("Source.")) %>% drop_na() %>% rename(Rank_New =
+                                                                           Rank.y.x, Rank_Old = Rank.x.y)
+rs_joined <-
+  mutate(rs_joined_Q5, Rank_Change = Rank_New - Rank_Old) %>% arrange(Rank_Change)
 
 ### Question 6 ----------
 
@@ -126,27 +146,36 @@ nrow(rs_joined) # it is 799
 
 #ANSWER
 
-
+rs_joined <-
+  rs_joined %>% mutate(decades = floor(rs_joined$Year.y.x / 10) * 10)
+as.factor(rs_joined$decades)
+rs_joined %>% group_by(decades) %>% summarise(mean(Rank_Change))
+#apparently, 1950s improved the most
 
 ### Question 7 ----------
 
 # Use fct_count to see the number of songs within each decade
 # Then use fct_lump to limit decade to 3 levels (plus other), and
-# Do fct_count on the lumped factor with the prop argument to see the 
+# Do fct_count on the lumped factor with the prop argument to see the
 # proportion of songs in each of the top three decades (vs. all the rest)
 
 #ANSWER
 
+rs_joined %>% group_by(decades) %>% fct_count(factor(
+  rs_joined$decades,
+  levels = c("1950", "1960", "1970", "1980", "1990", "2000")
+))
+#I've tried many ways but the decades column does not turn into factor
 
-
-### Question 8 ---------- 
+### Question 8 ----------
 
 # Read the file "top_20.csv" into a tibble called top20
 # Release_Date isn't read in correctly as a date
 # Use parse_date_time to fix it
 
 #ANSWER
-
+top20 <- read_csv("top_20.csv")
+parse_date_time(top20$Release, "d-m-y")
 
 ### Question 9 --------
 
@@ -155,7 +184,10 @@ nrow(rs_joined) # it is 799
 # overwrite top25 with the pivoted data (there should now be 20 rows!)
 
 #ANSWER
-
+top25 <-
+  top20 %>% pivot_wider(id_cols = "Song",
+                        names_from = "Style",
+                        values_from = "Value")
 
 
 ### Question 10 ---------
@@ -163,23 +195,25 @@ nrow(rs_joined) # it is 799
 # Merge in the data from rs_joined to top20 using left_join by artist and song
 # The results should be top20 (20 rows of data) with columns added from rs_joined
 # Use the "month" function from lubridate to get the release month from the release date
-# and add that as a new variable to top 20. 
+# and add that as a new variable to top 20.
 # It should be a factor - if you get a number back read the help for ?month to see how to get a factor
 # Create a new factor called "season" that collapses each set of 3 months into a season "Winter", "Spring", etc.
 # Count the number of songs that were released in each season
 
 #ANSWER
-
-
-
+Q10 <- left_join(top20, rs_joined)
+Q10 %>% mutate()
 ### Question 11 ---------
 
-# How many songs in the top 20 were major vs. minor? 
+# How many songs in the top 20 were major vs. minor?
 # Create a new factor called "Quality" that is either Major or Minor
 # Minor keys contain the lowercase letter "m". If there's no "m", it's Major
 # Figure out which is the top-ranked song (from Rank_New) that used a minor key
 
 #ANSWER
-
-
-
+top20 <-
+  top20 %>% mutate(Quality = ifelse(grepl('m$', top20$Value), 'Minor', 'Major'))
+top20 %>% count(Quality) #35 Major, 5 Minor
+Q11 <-
+  Q10 %>% mutate(Quality = ifelse(grepl('m$', top20$Value), 'Minor', 'Major')) %>% arrange(Q10, desc(Rank_New))
+# 5 of them used minor key (based on what I have from the dataset)
